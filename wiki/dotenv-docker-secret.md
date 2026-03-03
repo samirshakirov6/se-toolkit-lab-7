@@ -34,7 +34,9 @@
 
 ## What is `.env.docker.secret`
 
-`.env.docker.secret` is an [`.env` file](./environments.md#env-file) that stores [environment variables](./environments.md#environment-variable) for [`Docker Compose`](./docker-compose.md#what-is-docker-compose). The values are substituted into [`docker-compose.yml`](../docker-compose.yml) when running commands with the `--env-file` flag (e.g., `docker compose --env-file .env.docker.secret up --build`).
+`.env.docker.secret` is an [`.env` file](./environments.md#env-file) that stores [environment variables](./environments.md#environment-variable) for [`Docker Compose`](./docker-compose.md#what-is-docker-compose).
+
+The values are substituted into [`docker-compose.yml`](../docker-compose.yml) when running commands with the `--env-file` flag (e.g., `docker compose --env-file .env.docker.secret up --build`).
 
 Default values: [`.env.docker.example`](../.env.docker.example)
 

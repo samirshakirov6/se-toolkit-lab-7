@@ -25,6 +25,7 @@
 - [4.23. Horizontal rules](#423-horizontal-rules)
 - [4.24. Inline paths](#424-inline-paths)
 - [4.25. Branch-on-remote references](#425-branch-on-remote-references)
+- [4.26. Example IP address](#426-example-ip-address)
 
 ## 4.1. Instructions wording
 
@@ -384,3 +385,11 @@ From a task file:
 ```markdown
 See [`<branch>`](../../../wiki/git.md#branch), [`<remote>`](../../../wiki/git.md#remote).
 ```
+
+## 4.26. Example IP address
+
+Use `10.93.24.1` as the example IP address in all documentation.
+
+Good: `10.93.24.1`
+
+Bad: `192.168.1.1`, `10.0.0.1`

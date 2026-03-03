@@ -6,6 +6,7 @@
 - [Assertion](#assertion)
 - [Dynamic analysis](#dynamic-analysis)
 - [Static analysis](#static-analysis)
+- [Boundary value analysis](#boundary-value-analysis)
 
 ## What is testing
 
@@ -42,3 +43,7 @@ Static analysis checks code for errors without running it. It can detect type er
 Examples:
 
 - [`Pylance`](./python.md#pylance)
+
+## Boundary value analysis
+
+<!-- TODO -->

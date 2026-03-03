@@ -286,11 +286,11 @@ Password-based authentication asks you to type the remote user's password.
    You should see logs like these:
 
    ```terminal
-   PING 10.93.24.112 (10.93.24.112) 56(84) bytes of data.
+   PING 10.93.24.1 (10.93.24.1) 56(84) bytes of data.
 
-   64 bytes from 10.93.24.112: icmp_seq=1 ttl=61 time=2.15 ms
-   64 bytes from 10.93.24.112: icmp_seq=2 ttl=61 time=0.996 ms
-   64 bytes from 10.93.24.112: icmp_seq=3 ttl=61 time=1.08 ms
+   64 bytes from 10.93.24.1: icmp_seq=1 ttl=61 time=2.15 ms
+   64 bytes from 10.93.24.1: icmp_seq=2 ttl=61 time=0.996 ms
+   64 bytes from 10.93.24.1: icmp_seq=3 ttl=61 time=1.08 ms
    
    ...
    ```

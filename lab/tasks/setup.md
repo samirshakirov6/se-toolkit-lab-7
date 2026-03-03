@@ -124,7 +124,7 @@
 > Branch protection prevents accidental pushes directly to `main`.
 > This enforces the PR workflow and ensures all changes are reviewed.
 
-1. [Protect a branch](../../wiki/github.md#protect-a-branch).
+1. [Protect the `main` branch](../../wiki/github.md#protect-a-branch).
 
 ### 1.4. Set up programs
 

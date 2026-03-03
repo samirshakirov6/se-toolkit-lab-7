@@ -3,7 +3,8 @@
 <h2>Table of contents</h2>
 
 - [What is `Git`](#what-is-git)
-- [Remote](#remote)
+- [What is remote](#what-is-remote)
+  - [`<remote>`](#remote)
 - [Commit](#commit)
   - [Commit hash](#commit-hash)
   - [`<git-commit-hash>`](#git-commit-hash)
@@ -35,7 +36,7 @@ Docs:
 - [Git Reference](https://git-scm.com/doc)
 - [Git Cheat Sheet](https://git-scm.com/cheat-sheet)
 
-## Remote
+## What is remote
 
 A remote is a version of your [repository](./github.md#repository) hosted on a [remote host](./computer-networks.md#remote-host) (e.g., on [`GitHub`](./github.md#what-is-github)).
 
@@ -48,6 +49,15 @@ Docs:
 - [Git Remotes](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes)
 
 See also [`upstream`](./github.md#upstream) and [`origin`](./github.md#origin).
+
+### `<remote>`
+
+A [remote](#what-is-remote) name (without `<` and `>`).
+
+Common remote names:
+
+- [`origin`](./github.md#origin) — your fork on `GitHub`.
+- [`upstream`](./github.md#upstream) — the original repository that was forked.
 
 ## Commit
 
@@ -186,7 +196,7 @@ Example: [`.gitignore`](../.gitignore)
 
 Common ignored files:
 
-- Secrets (`.env.secret`, keys, tokens).
+- Secrets (`.env` files, keys, tokens).
 - Build artifacts (`dist/`, `build/`).
 - Local caches and temporary files.
 

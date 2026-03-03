@@ -10,8 +10,9 @@ Write unit and end-to-end tests, diagnose bugs from failing test output, and use
 
 <h4>Context</h4>
 
-The back-end contains intentional bugs at specific boundary values.
-You will discover and fix them by writing tests, then use an AI agent to generate additional coverage.
+The back-end contains intentional bugs that you will discover and fix by writing tests, then use an AI agent to generate additional coverage.
+
+<!-- TODO diagram -->
 
 <h4>Table of contents</h4>
 
@@ -19,14 +20,16 @@ You will discover and fix them by writing tests, then use an AI agent to generat
   - [1.1. Follow the `Git workflow`](#11-follow-the-git-workflow)
   - [1.2. Create a `Lab Task` issue](#12-create-a-lab-task-issue)
   - [1.3. Part A: Run unit tests locally](#13-part-a-run-unit-tests-locally)
-    - [1.3.1. Create the `.env.secret` file](#131-create-the-envsecret-file)
-    - [1.3.2. Run existing unit tests](#132-run-existing-unit-tests)
-    - [1.3.3. Add a new unit test](#133-add-a-new-unit-test)
-    - [1.3.4. Fix the bug](#134-fix-the-bug)
-    - [1.3.5. Rerun unit tests](#135-rerun-unit-tests)
-    - [1.3.6. Commit the fix](#136-commit-the-fix)
+    - [1.3.1. Create the environment file for unit tests](#131-create-the-environment-file-for-unit-tests)
+    - [1.3.1. Run existing unit tests](#131-run-existing-unit-tests)
+    - [1.3.2. Add a new unit test](#132-add-a-new-unit-test)
+    - [1.3.3. Fix the bug](#133-fix-the-bug)
+    - [1.3.4. Rerun unit tests](#134-rerun-unit-tests)
+    - [1.3.6. Commit your changes](#136-commit-your-changes)
+    - [1.3.5. Transfer the changes to your VM](#135-transfer-the-changes-to-your-vm)
+    - [1.3.6. Deploy the fixed `app` service on your VM](#136-deploy-the-fixed-app-service-on-your-vm)
   - [1.4. Part B: Run end-to-end tests remotely](#14-part-b-run-end-to-end-tests-remotely)
-    - [1.4.1. Redeploy the fixed version](#141-redeploy-the-fixed-version)
+    - [1.4.1. Create the environment file for E2E tests](#141-create-the-environment-file-for-e2e-tests)
     - [1.4.2. Run existing end-to-end tests](#142-run-existing-end-to-end-tests)
     - [1.4.3. Add two end-to-end tests](#143-add-two-end-to-end-tests)
     - [1.4.4. Fix the bug](#144-fix-the-bug)
@@ -46,6 +49,9 @@ You will discover and fix them by writing tests, then use an AI agent to generat
 
 Follow the [`Git workflow`](../../../wiki/git-workflow.md) to complete this task.
 
+> [!IMPORTANT]
+> You work on the [`<task-branch>`](../../../wiki/git-workflow.md#task-branch).
+
 ### 1.2. Create a `Lab Task` issue
 
 Title: `[Task] Back-end Testing`
@@ -53,40 +59,33 @@ Title: `[Task] Back-end Testing`
 ### 1.3. Part A: Run unit tests locally
 
 <!-- no toc -->
-- [1.3.1. Create the `.env.secret` file](#131-create-the-envsecret-file)
-- [1.3.2. Run existing unit tests](#132-run-existing-unit-tests)
-- [1.3.3. Add a new unit test](#133-add-a-new-unit-test)
-- [1.3.4. Fix the bug](#134-fix-the-bug)
-- [1.3.5. Rerun unit tests](#135-rerun-unit-tests)
-- [1.3.6. Commit the fix](#136-commit-the-fix)
+- [1.3.1. Run existing unit tests](#131-run-existing-unit-tests)
+- [1.3.2. Add a new unit test](#132-add-a-new-unit-test)
+- [1.3.3. Fix the bug](#133-fix-the-bug)
+- [1.3.4. Rerun unit tests](#134-rerun-unit-tests)
+- [1.3.5. Deploy the fixed `app` service on your VM](#136-deploy-the-fixed-app-service-on-your-vm)
 
 > [!NOTE]
 > Unit tests do not require a running server. They test individual functions in isolation.
 
-#### 1.3.1. Create the `.env.secret` file
+#### 1.3.1. Create the environment file for unit tests
 
-1. [Check that the current directory is `se-toolkit-lab-4`](../../../wiki/shell.md#check-the-current-directory-is-directory-name).
-2. To create the `.env.secret` file from the example,
+1. To copy the content of [`.env.tests.unit.example`](../../../.env.tests.unit.example) to [`.env.tests.unit.secret`](../../../wiki/dotenv-tests-unit-secret.md#what-is-envtestsunitsecret),
 
    [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
 
    ```terminal
-   cp .env.example .env.secret
+   cp .env.tests.unit.example .env.tests.unit.secret
    ```
 
-> [!NOTE]
-> The `.env.secret` file contains environment variables for the back-end application.
-> The test runner needs it to configure the application settings.
-> The default values in [`.env.example`](../../../.env.example) work out of the box.
-
-#### 1.3.2. Run existing unit tests
+#### 1.3.1. Run existing unit tests
 
 1. To run the existing unit tests,
 
    [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
 
    ```terminal
-   uv run poe test
+   uv run poe test-unit
    ```
 
 2. All existing tests should pass.
@@ -97,78 +96,97 @@ Title: `[Task] Back-end Testing`
    ===================== 3 passed in X.XXs =====================
    ```
 
-#### 1.3.3. Add a new unit test
+#### 1.3.2. Add a new unit test
 
 > [!TIP]
 > Feel free to use AI to generate the tests. Make sure to provide them with necessary context.
 
 1. [Open the file](../../../wiki/vs-code.md#open-the-file):
    [`backend/tests/unit/test_interactions.py`](../../../backend/tests/unit/test_interactions.py).
-2. Add a new unit test that targets the following boundary-value case:
+2. Add a new unit test that targets the following [boundary-value case](../../../wiki/testing.md#boundary-value-analysis):
 
-   An interaction where `item_id` and `learner_id` are different values — for example, `item_id=1` and `learner_id=2`. When filtering by `item_id=1`, this interaction should appear in the results.
+   An interaction whose `item_id` is exactly equal to `max_item_id` — for example, `item_id=2` and `max_item_id=2`. This interaction should appear in the results because the filter condition is "less than or equal to."
 
-   Name the test `test_filter_includes_interaction_with_different_learner_id`.
-
-3. To run the tests,
-
-   [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
-
-   ```terminal
-   uv run poe test
-   ```
-
-4. Observe that the new test fails.
-
-   The output should be similar to this:
-
-   ```terminal
-   FAILED backend/tests/unit/test_interactions.py::test_filter_includes_interaction_with_different_learner_id - AssertionError: assert 0 == 1
-   ```
-
-   This line means the following:
-   - The test failed (`FAILED`).
-   - The test is in the file `backend/tests/unit/test_interactions.py`.
-   - The name of the failing test is `test_filter_includes_interaction_with_different_learner_id`.
-   - The failed assertion is `assert 0 == 1` — the filter returned 0 interactions, but 1 was expected.
-
-#### 1.3.4. Fix the bug
-
-1. [Open the file](../../../wiki/vs-code.md#open-the-file):
-   [`backend/app/routers/interactions.py`](../../../backend/app/routers/interactions.py).
-2. Fix the bug in the `_filter_by_item_id` function.
+   Name the test `test_filter_includes_interaction_at_boundary`.
 
 3. <details><summary>Click to open a hint</summary>
 
-   The filter is applied in-memory after all interactions are fetched from the database.
-   Look at the condition that decides which interactions to include — it compares the wrong field on the interaction object.
+   The code for the new case should be almost the same as for the existing tests.
 
    </details>
 
 4. <details><summary>Click to open the solution</summary>
 
-   Find this line in `_filter_by_item_id`:
+   ```python
+   def test_filter_includes_interaction_at_boundary() -> None:
+       interactions = [_make_log(1, 1, 2)]
+       result = filter_by_max_item_id(interactions=interactions, max_item_id=2)
+       assert len(result) == 1
+       assert result[0].id == 1
+   ```
+
+   </details>
+
+5. To run the tests,
+
+   [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
+
+   ```terminal
+   uv run poe test-unit
+   ```
+
+6. Observe that the new test fails.
+
+   The output should be similar to this:
+
+   ```terminal
+   FAILED backend/tests/unit/test_interactions.py::test_filter_includes_interaction_at_boundary - assert 0 == 1
+   ```
+
+   This line means the following:
+   - The test failed (`FAILED`).
+   - The test is in the file `backend/tests/unit/test_interactions.py`.
+   - The name of the failing test is `test_filter_includes_interaction_at_boundary`.
+   - The failed [assertion](../../../wiki/testing.md#assertion) is `assert 0 == 1` — the filter returned 0 interactions, but 1 was expected.
+
+#### 1.3.3. Fix the bug
+
+1. [Open the file](../../../wiki/vs-code.md#open-the-file):
+   [`backend/app/routers/interactions.py`](../../../backend/app/routers/interactions.py).
+
+2. Fix the bug in the `filter_by_max_item_id` function.
+
+3. <details><summary>Click to open a hint</summary>
+
+   The filter is applied in-memory after all interactions are fetched from the database.
+   Look at the comparison operator in the condition that decides which interactions to include — it excludes the boundary value.
+
+   </details>
+
+4. <details><summary>Click to open the solution</summary>
+
+   Find this line in `filter_by_max_item_id`:
 
    ```python
-   return [i for i in interactions if i.learner_id == item_id]  # BUG
+   return [i for i in interactions if i.item_id < max_item_id]  # BUG
    ```
 
    Change it to:
 
    ```python
-   return [i for i in interactions if i.item_id == item_id]
+   return [i for i in interactions if i.item_id <= max_item_id]
    ```
 
    </details>
 
-#### 1.3.5. Rerun unit tests
+#### 1.3.4. Rerun unit tests
 
 1. To rerun the unit tests,
 
    [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
 
    ```terminal
-   uv run poe test
+   uv run poe test-unit
    ```
 
 2. All tests should pass.
@@ -179,23 +197,73 @@ Title: `[Task] Back-end Testing`
    ===================== 4 passed in X.XXs =====================
    ```
 
-#### 1.3.6. Commit the fix
+#### 1.3.6. Commit your changes
 
 1. [Commit](../../../wiki/git-workflow.md#commit) your changes.
 
    Use this commit message:
 
    ```text
-   fix: filter interactions by item_id instead of learner_id
+   fix: use <= instead of < in max_item_id filter
    ```
 
-<!-- TODO push commit -->
-<!-- TODO pull branch on the VM -->
+#### 1.3.5. Transfer the changes to your VM
+
+> [!NOTE]
+> See [`origin`](../../../wiki/github.md#origin).
+
+1. [Push commits to `<task-branch>` on `origin`](../../../wiki/git-workflow.md#push-commits).
+
+   Replace [`<task-branch>`](../../../wiki/git-workflow.md#task-branch).
+
+2. [Open a new `VS Code Terminal`](../../../wiki/vs-code.md#open-a-new-vs-code-terminal).
+
+3. [Connect to the VM](../../../wiki/ssh.md#connect-to-the-vm).
+
+4. To navigate to the repository directory on the VM,
+
+   [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
+
+   ```terminal
+   cd se-toolkit-lab-4
+   ```
+
+5. [Pull the latest changes from `<task-branch>` on `origin`](../../../wiki/git-vscode.md#pull-changes-from-branch-on-remote-using-the-vs-code-terminal).
+
+   Replace [`<task-branch>`](../../../wiki/git-workflow.md#task-branch).
+
+6. [Switch to `<task-branch>`](../../../wiki/git-vscode.md#switch-to-an-existing-branch-using-vs-code-terminal).
+
+   Replace [`<task-branch>`](../../../wiki/git-workflow.md#task-branch).
+
+#### 1.3.6. Deploy the fixed `app` service on your VM
+
+1. To rebuild and start the [`app` service](../../../wiki/docker-compose-yml.md#app-service) in [background](../../../wiki/operating-system.md#background-process),
+
+   [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
+
+   ```terminal
+   docker compose --env-file .env.docker.secret up app --build --force-recreate -d
+   ```
+
+2. To verify the service is running,
+
+   [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
+
+   ```terminal
+   docker compose --env-file .env.docker.secret ps app --format "table {{.Service}}\t{{.Status}}"
+   ```
+
+   The output should be similar to this:
+
+   ```terminal
+   SERVICE   STATUS
+   app       Up 1 minute
+   ```
 
 ### 1.4. Part B: Run end-to-end tests remotely
 
 <!-- no toc -->
-- [1.4.1. Redeploy the fixed version](#141-redeploy-the-fixed-version)
 - [1.4.2. Run existing end-to-end tests](#142-run-existing-end-to-end-tests)
 - [1.4.3. Add two end-to-end tests](#143-add-two-end-to-end-tests)
 - [1.4.4. Fix the bug](#144-fix-the-bug)
@@ -203,43 +271,29 @@ Title: `[Task] Back-end Testing`
 - [1.4.6. Commit the fix](#146-commit-the-fix)
 
 > [!NOTE]
-> End-to-end tests run on your local machine and send real [`HTTP`](../../../wiki/http.md#what-is-http) requests to the deployed version on the VM.
+> End-to-end tests run on your local machine and send real [`HTTP` requests](../../../wiki/http.md#http-request) to the deployed version on the VM.
 
-#### 1.4.1. Redeploy the fixed version
+#### 1.4.1. Create the environment file for E2E tests
 
-1. [Deploy the fixed version to your VM](./task-1.md#12-deploy-the-back-end-to-the-vm).
+1. To copy the content of [`.env.tests.e2e.example`](../../../.env.tests.e2e.example) to [`.env.tests.e2e.secret`](../../../wiki/dotenv-tests-e2e-secret.md#what-is-envtestse2esecret),
+
+   [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
+
+   ```terminal
+   cp .env.tests.e2e.example .env.tests.e2e.secret
+   ```
+
+2. [Open `.env.tests.e2e.secret`](../../../wiki/vs-code.md#open-the-file).
+3. Set [`API_BASE_URL`](../../../wiki/dotenv-tests-e2e-secret.md#api_base_url) to `http://<your-vm-ip-address>:<caddy-port>`. Replace:
+
+   - [`<your-vm-ip-address>`](../../../wiki/vm.md#your-vm-ip-address)
+   - [`<caddy-port>`](../../../wiki/caddy.md#caddy-port)
+
+4. Set [`API_KEY`](../../../wiki/dotenv-tests-e2e-secret.md#api_key) to the same value as [`API_KEY`](../../../wiki/dotenv-docker-secret.md#api_key) in [`.env.docker.secret`](../../../wiki/dotenv-docker-secret.md#what-is-envdockersecret) on the VM.
 
 #### 1.4.2. Run existing end-to-end tests
 
-1. Set the required environment variables in the terminal. Complete these steps:
-
-   1. To set the base URL of your deployed API,
-
-      [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
-
-      ```terminal
-      export API_BASE_URL=http://<your-vm-ip-address>:<caddy-port>
-      ```
-
-      Replace:
-
-      - [`<your-vm-ip-address>`](../../../wiki/vm.md#your-vm-ip-address)
-      - [`<caddy-port>`](../../../wiki/caddy.md#caddy-port)
-
-   2. To set the API key,
-
-      <!-- TODO use value from .env.docker.secret -->
-
-      [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
-
-      ```terminal
-      export API_KEY=<your-api-key>
-      ```
-      <!-- TODO link to section about API_KEY -->
-
-      Replace `<your-api-key>` with the same value as in your `.env.secret` file.
-
-2. To run the end-to-end tests,
+1. To run the end-to-end tests,
 
    [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -247,7 +301,7 @@ Title: `[Task] Back-end Testing`
    uv run poe test-e2e
    ```
 
-3. All existing end-to-end tests should pass.
+2. All existing end-to-end tests should pass.
 
    The output should be similar to this:
 
@@ -259,7 +313,7 @@ Title: `[Task] Back-end Testing`
 
 1. [Open the file](../../../wiki/vs-code.md#open-the-file):
    [`backend/tests/e2e/test_interactions.py`](../../../backend/tests/e2e/test_interactions.py).
-2. Add two end-to-end tests that cover the following boundary-value cases:
+2. Add two end-to-end tests that cover the following cases:
 
    - Test 1: `GET /interactions/` returns [`HTTP` status code](../../../wiki/http.md#http-response-status-code) `200`.
    - Test 2: `GET /interactions/` response body is a [`JSON`](../../../wiki/file-formats.md#json) array.
@@ -295,8 +349,8 @@ Title: `[Task] Back-end Testing`
    The output should be similar to this:
 
    ```terminal
-   FAILED backend/tests/e2e/test_interactions.py::test_get_interactions_returns_200 - AssertionError: assert 500 == 200
-   FAILED backend/tests/e2e/test_interactions.py::test_get_interactions_response_is_a_list - ...
+   FAILED backend/tests/e2e/test_interactions.py::test_get_interactions_returns_200 - assert 500 == 200
+   FAILED backend/tests/e2e/test_interactions.py::test_get_interactions_response_is_a_list - json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
    ```
 
    The `500` status code means the server encountered an internal error while building the response.
@@ -332,8 +386,11 @@ Title: `[Task] Back-end Testing`
 
 #### 1.4.5. Redeploy and rerun
 
-1. [Deploy the fixed version to the VM](./task-1.md#12-deploy-the-back-end-to-the-vm).
-2. To run the end-to-end tests,
+1. [Transfer the changes to your VM](#135-transfer-the-changes-to-your-vm)
+
+2. [Deploy the fixed `app` service on your VM](#136-deploy-the-fixed-app-service-on-your-vm).
+
+3. To run the end-to-end tests,
 
    [run in the `VS Code Terminal`](../../../wiki/vs-code.md#run-a-command-in-the-vs-code-terminal):
 
@@ -341,7 +398,7 @@ Title: `[Task] Back-end Testing`
    uv run poe test-e2e
    ```
 
-3. All end-to-end tests should pass.
+4. All end-to-end tests should pass.
 
    The output should be similar to this:
 
