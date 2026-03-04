@@ -13,7 +13,7 @@
   - [1.4. Set up programs](#14-set-up-programs)
     - [1.4.1. (UPD) Set up `VS Code`](#141-upd-set-up-vs-code)
     - [1.4.2. (UPD) Set up `Docker`](#142-upd-set-up-docker)
-    - [1.4.3. (UPD) (`Windows` only) Set the default shell for the `VS Code Terminal`](#143-upd-windows-only-set-the-default-shell-for-the-vs-code-terminal)
+    - [1.4.3. (UPD) (`Windows` only) Switch to the `Linux` shell for the `VS Code Terminal`](#143-upd-windows-only-switch-to-the-linux-shell-for-the-vs-code-terminal)
     - [1.4.4. Set up `Git`](#144-set-up-git)
   - [1.5. (UPD) Open in `VS Code` the `software-engineering-toolkit` directory](#15-upd-open-in-vs-code-the-software-engineering-toolkit-directory)
   - [1.6. Clone your fork](#16-clone-your-fork)
@@ -138,10 +138,10 @@
 2. [Install `Docker`](../../wiki/docker.md#install-docker) if it's not installed.
 3. [Start `Docker`](../../wiki/docker.md#start-docker).
 
-#### 1.4.3. (UPD) (`Windows` only) Set the default shell for the `VS Code Terminal`
+#### 1.4.3. (UPD) (`Windows` only) Switch to the `Linux` shell for the `VS Code Terminal`
 
 1. [Check the current shell in the `VS Code Terminal`](../../wiki/vs-code.md#check-the-current-shell-in-the-vs-code-terminal).
-2. If it's not `bash` or `zsh`, [set the default shell](../../wiki/vs-code.md#windows-only-set-the-default-shell-for-the-vs-code-terminal).
+2. If it's not `bash` or `zsh`, [switch to the `Linux` shell for the `VS Code Terminal`](../../wiki/vs-code.md#windows-only-switch-to-the-linux-shell-for-the-vs-code-terminal).
 3. [Check the current shell](../../wiki/vs-code.md#check-the-current-shell-in-the-vs-code-terminal) again.
 
 #### 1.4.4. Set up `Git`
