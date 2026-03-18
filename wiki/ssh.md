@@ -84,7 +84,7 @@ See:
 
 > [!NOTE]
 > The `$` at the end indicates a regular user.
-> A `#` indicates [the user `root`](./linux.md#the-user-root) (admin).
+> A `#` indicates [the user `root`](./linux.md#the-user-root).
 
 ### Check whether you run an `SSH` shell
 
