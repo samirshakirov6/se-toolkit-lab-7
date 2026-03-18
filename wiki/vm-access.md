@@ -37,6 +37,19 @@
   - [Login with password](#login-with-password)
 
 ## About the VM access
+
+VM access is the process of connecting to a [virtual machine](./vm.md#what-is-a-vm) over a network using [`SSH`](./ssh.md#what-is-ssh).
+
+The initial connection uses [the user `root`](./linux.md#the-user-root) because a fresh VM has no other [users](./operating-system.md#user).
+After that, you create [a non-root user](./linux.md#a-non-root-user) and switch to it for all further work.
+
+Working as [the user `root`](./linux.md#the-user-root) is risky because every command runs with full [permissions](./linux.md#permissions) — a mistake or a compromised session can modify or delete any [file](./file-system.md#file), change system configuration, or break the [operating system](./operating-system.md#what-is-an-operating-system).
+A non-root user operates with limited permissions by default, so accidental damage is contained.
+When an administrative action is genuinely needed, the user can escalate temporarily with the [`sudo` command](./linux-administration.md#the-sudo-command).
+
+After switching to the non-root user, you [restrict the `SSH` connection](#restrict-the-ssh-connection) so that [the user `root`](./linux.md#the-user-root) can no longer log in remotely.
+This reduces the attack surface of the VM: even if an attacker knows the IP address, the most powerful account is unreachable over the network.
+
 ## Set up the `SSH` access to the VM
 
 > [!NOTE]
