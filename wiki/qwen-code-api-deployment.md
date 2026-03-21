@@ -75,7 +75,7 @@ Complete these steps:
 
 2. [Set the variable in `.env.secret`](./environments.md#set-the-variable-to-value-in-the-env-file-at-file-path):
 
-   - [`QWEN_CODE_API_KEY`](./qwen-code-api-dotenv-secret.md#qwen-code-api-key)
+   - [`QWEN_CODE_API_KEY`](./qwen-code-api-dotenv-secret.md#qwen_code_api_key)
 
 ### Start the `Qwen Code` API (REMOTE)
 
