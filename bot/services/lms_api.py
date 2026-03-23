@@ -139,6 +139,21 @@ class LMSAPIClient:
         except Exception as e:
             return {"error": str(e)}
 
+    async def get_learners(self) -> List[Dict[str, Any]]:
+        """Get all learners from the backend.
+
+        Returns:
+            List of learner objects with 'id', 'name', 'group' fields.
+        """
+        try:
+            client = await self.get_client()
+            response = await client.get("/learners/")
+            if response.status_code == 200:
+                return response.json()
+            return []
+        except Exception:
+            return []
+
     async def get_pass_rates(self, lab_identifier: str) -> Optional[List[Dict[str, Any]]]:
         """Get pass rates for tasks in a specific lab.
         
@@ -284,6 +299,70 @@ class LMSAPIClient:
                 "result": "ranking",
                 "labs": lab_scores
             }
+
+    async def get_top_learners(self, lab_identifier: str, limit: int = 10) -> Optional[List[Dict[str, Any]]]:
+        """Get top N learners by score for a lab.
+
+        Args:
+            lab_identifier: Lab identifier (e.g., "lab-01").
+            limit: Number of top learners to return (default 10).
+
+        Returns:
+            List of top learner objects.
+        """
+        try:
+            client = await self.get_client()
+            response = await client.get(
+                "/analytics/top-learners",
+                params={"lab": lab_identifier, "limit": limit}
+            )
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except Exception:
+            return []
+
+    async def get_timeline(self, lab_identifier: str) -> Optional[List[Dict[str, Any]]]:
+        """Get submissions timeline for a lab.
+
+        Args:
+            lab_identifier: Lab identifier (e.g., "lab-01").
+
+        Returns:
+            List of timeline data points.
+        """
+        try:
+            client = await self.get_client()
+            response = await client.get(
+                "/analytics/timeline",
+                params={"lab": lab_identifier}
+            )
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except Exception:
+            return None
+
+    async def get_groups(self, lab_identifier: str) -> Optional[List[Dict[str, Any]]]:
+        """Get per-group scores for a lab.
+
+        Args:
+            lab_identifier: Lab identifier (e.g., "lab-01").
+
+        Returns:
+            List of group performance data.
+        """
+        try:
+            client = await self.get_client()
+            response = await client.get(
+                "/analytics/groups",
+                params={"lab": lab_identifier}
+            )
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except Exception:
+            return None
 
     async def find_lowest_lab(self) -> Dict[str, Any]:
         """Find the lab with the lowest pass rate."""

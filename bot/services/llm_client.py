@@ -11,13 +11,13 @@ from typing import Optional, List, Dict, Any, Callable
 from config import settings
 
 
-# Define 9 available tools for the LLM
+# Define 9+ available tools for the LLM (all backend endpoints)
 TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "get_health",
-            "description": "Check if the backend is healthy and get the number of items in the database. Use this when the user asks about system status, if the backend is working, health check, or server status.",
+            "name": "get_items",
+            "description": "Get list of all labs and tasks from the database. Use when user asks: what labs exist, list all items, show available content, what labs are available, get labs list.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -29,7 +29,19 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "get_labs",
-            "description": "Get a list of all available labs. Use this when the user asks about available labs, what labs exist, wants to see the lab list, or asks which labs are available.",
+            "description": "Get list of all labs (alias for get_items). Use when user asks: what labs exist, list labs, show labs, get labs list.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_learners",
+            "description": "Get list of all enrolled students and their groups. Use when user asks: how many students, list learners, who is enrolled, student count, show all students.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -41,13 +53,13 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "get_scores",
-            "description": "Get scores and pass rates for a specific lab. Use this when the user asks about scores, pass rates, statistics, or performance for a specific lab. Requires a lab identifier like 'lab-01', 'lab-04', etc.",
+            "description": "Get score distribution (4 buckets) for a specific lab. Use when user asks about scores, score distribution, how students performed in a lab. Requires lab parameter like 'lab-01'.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "lab": {
                         "type": "string",
-                        "description": "Lab identifier in format 'lab-XX' where XX is a 2-digit number (e.g., 'lab-01', 'lab-04', 'lab-07'). Extract the lab number from the user's query and format it as 'lab-XX'."
+                        "description": "Lab identifier in format 'lab-XX' (e.g., 'lab-01', 'lab-04'). Extract number from query and format as 'lab-XX'."
                     }
                 },
                 "required": ["lab"]
@@ -57,60 +69,72 @@ TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "get_help",
-            "description": "Get a list of available commands. Use this when the user asks for help, what commands are available, how to use the bot, or needs assistance.",
+            "name": "get_pass_rates",
+            "description": "Get per-task average scores and attempt counts for a specific lab. Use when user asks: pass rates, average scores, task performance, how hard is a lab, lab statistics. Requires lab parameter.",
             "parameters": {
                 "type": "object",
-                "properties": {},
-                "required": []
+                "properties": {
+                    "lab": {
+                        "type": "string",
+                        "description": "Lab identifier in format 'lab-XX' (e.g., 'lab-01', 'lab-04')."
+                    }
+                },
+                "required": ["lab"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "sync_data",
-            "description": "Trigger the ETL pipeline to sync data from the autochecker API. Use this when the user asks to sync data, refresh data, update the database, run the pipeline, or populate the database.",
+            "name": "get_timeline",
+            "description": "Get submissions per day for a lab showing activity over time. Use when user asks: timeline, when students submitted, activity over time, submission dates. Requires lab parameter.",
             "parameters": {
                 "type": "object",
-                "properties": {},
-                "required": []
+                "properties": {
+                    "lab": {
+                        "type": "string",
+                        "description": "Lab identifier in format 'lab-XX'."
+                    }
+                },
+                "required": ["lab"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "get_items",
-            "description": "Get all items (labs and tasks) from the database. Use this when the user asks about all items, wants to see the full list of content, or asks what content is available.",
+            "name": "get_groups",
+            "description": "Get per-group scores and student counts for a lab. Use when user asks: group performance, compare groups, which group is best, group statistics. Requires lab parameter.",
             "parameters": {
                 "type": "object",
-                "properties": {},
-                "required": []
+                "properties": {
+                    "lab": {
+                        "type": "string",
+                        "description": "Lab identifier in format 'lab-XX'."
+                    }
+                },
+                "required": ["lab"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "get_analytics_timeline",
-            "description": "Get the submissions timeline analytics showing when students submitted their work. Use this when the user asks about submission timeline, when students submitted, or activity over time.",
+            "name": "get_top_learners",
+            "description": "Get top N learners by score for a lab. Use when user asks: top students, best learners, leaderboard, ranking, who performed best. Requires lab and optional limit (default 10).",
             "parameters": {
                 "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_analytics_groups",
-            "description": "Get group performance analytics comparing different student groups. Use this when the user asks about group performance, compare groups, or how different groups are doing.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
+                "properties": {
+                    "lab": {
+                        "type": "string",
+                        "description": "Lab identifier in format 'lab-XX'."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of top learners to return (default 10)."
+                    }
+                },
+                "required": ["lab"]
             }
         }
     },
@@ -118,36 +142,24 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "get_completion_rate",
-            "description": "Get the overall completion rate for the course or a specific lab. Use this when the user asks about completion rate, how many students completed, or overall progress.",
+            "description": "Get completion rate percentage for a lab. Use when user asks: completion rate, how many completed, what percentage finished, lab completion stats. Requires lab parameter.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "lab": {
                         "type": "string",
-                        "description": "Optional lab identifier (e.g., 'lab-01'). If not provided, returns overall completion rate."
+                        "description": "Lab identifier in format 'lab-XX'."
                     }
                 },
-                "required": []
+                "required": ["lab"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "find_lowest_lab",
-            "description": "Find the lab with the LOWEST pass rate. Use ONLY when user asks: 'which lab has lowest pass rate', 'hardest lab', 'worst performing lab', 'lowest score lab'.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "find_highest_lab",
-            "description": "Find the lab with the HIGHEST pass rate. Use ONLY when user asks: 'which lab has highest pass rate', 'easiest lab', 'best performing lab', 'highest score lab'.",
+            "name": "trigger_sync",
+            "description": "Refresh data from autochecker by running the ETL pipeline. Use when user asks: sync data, refresh, update database, run pipeline, get latest data.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -159,36 +171,34 @@ TOOLS = [
 
 SYSTEM_PROMPT = """You are an assistant that helps users interact with an LMS (Learning Management System) via a Telegram bot.
 
-You have access to the following 10 tools:
-1. get_health - Check backend health and item count
-2. get_labs - List all available labs
-3. get_scores - Get scores/pass rates for a specific lab (requires lab identifier)
-4. get_help - List available commands
-5. sync_data - Trigger ETL pipeline to sync data
-6. get_items - Get all items from database
-7. get_analytics_timeline - Get submissions timeline
-8. get_analytics_groups - Get group performance analytics
-9. get_completion_rate - Get completion rate
-10. find_lowest_lab - Find lab with LOWEST pass rate
-11. find_highest_lab - Find lab with HIGHEST pass rate
+You have access to 9 tools that map to backend API endpoints:
+1. get_items - List all labs and tasks
+2. get_learners - List enrolled students and groups
+3. get_scores - Score distribution for a lab (requires lab)
+4. get_pass_rates - Per-task averages and attempts for a lab (requires lab)
+5. get_timeline - Submissions per day for a lab (requires lab)
+6. get_groups - Per-group scores for a lab (requires lab)
+7. get_top_learners - Top N learners for a lab (requires lab, optional limit)
+8. get_completion_rate - Completion rate for a lab (requires lab)
+9. trigger_sync - Refresh data from autochecker
 
-IMPORTANT RULES:
-- "which lab has lowest pass rate" → use find_lowest_lab (NOT get_labs!)
-- "which lab has highest pass rate" → use find_highest_lab (NOT get_labs!)
-- "show scores for lab 04" → use get_scores with lab="lab-04"
-- "sync data" → use sync_data
-- "what labs available" → use get_labs
+IMPORTANT:
+- Always extract lab numbers from user queries and format as 'lab-XX' (e.g., "lab 4" -> "lab-04", "lab-01" -> "lab-01")
+- For multi-step queries (e.g., "which lab has lowest pass rate"), first call get_items, then call get_pass_rates for each lab, then compare
+- The LLM must call tools to get real data - don't make up answers
 
 Examples:
-User: "which lab has the lowest pass rate" → {"tool": "find_lowest_lab", "arguments": {}}
-User: "which lab is hardest" → {"tool": "find_lowest_lab", "arguments": {}}
-User: "show me lab 04 scores" → {"tool": "get_scores", "arguments": {"lab": "lab-04"}}
-User: "sync the data" → {"tool": "sync_data", "arguments": {}}
-User: "what labs are available" → {"tool": "get_labs", "arguments": {}}
-User: "is backend working" → {"tool": "get_health", "arguments": {}}
+User: "what labs are available?" → {"tool": "get_items", "arguments": {}}
+User: "show scores for lab 4" → {"tool": "get_scores", "arguments": {"lab": "lab-04"}}
+User: "which lab has lowest pass rate?" → {"tool": "get_items", "arguments": {}} (then will call get_pass_rates for each)
+User: "top 5 students in lab 3" → {"tool": "get_top_learners", "arguments": {"lab": "lab-03", "limit": 5}}
+User: "compare groups in lab 2" → {"tool": "get_groups", "arguments": {"lab": "lab-02"}}
+User: "sync the data" → {"tool": "trigger_sync", "arguments": {}}
+User: "how many students enrolled" → {"tool": "get_learners", "arguments": {}}
 
 Respond with ONLY a JSON object: {"tool": "tool_name", "arguments": {...}}
-If unsure: {"tool": null, "response": "Use /help to see available commands."}
+For multi-step queries, respond with the FIRST tool to call.
+If unsure or greeting: {"tool": null, "response": "friendly message with capabilities hint"}
 """
 
 
@@ -247,25 +257,15 @@ class LLMClient:
             
             result = response.json()
             content = result["choices"][0]["message"]["content"]
-            
+
             # Parse the JSON response
             try:
                 intent = json.loads(content)
                 return intent
             except json.JSONDecodeError:
-                # If LLM didn't return valid JSON, try to extract it
-                import re
-                json_match = re.search(r'\{[^}]+\}', content)
-                if json_match:
-                    try:
-                        intent = json.loads(json_match.group())
-                        return intent
-                    except json.JSONDecodeError:
-                        pass
-                
-                # Fallback: return null tool
+                # If LLM didn't return valid JSON, return fallback
                 return {"tool": None, "response": "I'm not sure how to help with that. Use /help to see available commands."}
-                
+
         except Exception as e:
             return {"tool": None, "response": f"Error connecting to LLM: {str(e)}"}
 

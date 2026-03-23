@@ -6,7 +6,6 @@ and can be tested via --test mode or unit tests.
 """
 
 import asyncio
-import re
 from typing import Optional
 
 from services.lms_api import lms_client
@@ -14,18 +13,29 @@ from services.lms_api import lms_client
 
 def handle_start() -> str:
     """Handle /start command.
-    
+
     Returns:
-        Welcome message string.
+        Welcome message string with inline keyboard hint.
     """
-    return "Welcome to the LMS Bot! Use /help to see available commands."
+    return (
+        "Welcome to the LMS Bot! 🎓\n\n"
+        "I can help you check lab results, scores, and student performance.\n\n"
+        "You can:\n"
+        "• Use slash commands like /help, /health, /labs\n"
+        "• Or just ask me questions like:\n"
+        '  "what labs are available?"\n'
+        '  "show scores for lab 4"\n'
+        '  "which lab has the lowest pass rate?"\n'
+        '  "top 5 students in lab 3"\n\n'
+        "Use /help to see all commands, or use the buttons below!"
+    )
 
 
 def handle_help() -> str:
     """Handle /help command.
-    
+
     Returns:
-        List of available commands.
+        List of available commands and natural language examples.
     """
     return (
         "Available commands:\n"
@@ -33,7 +43,15 @@ def handle_help() -> str:
         "/help - Show this help message\n"
         "/health - Check backend status\n"
         "/labs - List available labs\n"
-        "/scores <lab> - Get scores for a lab"
+        "/scores <lab> - Get scores for a lab\n\n"
+        "Natural language examples:\n"
+        '• "what labs are available?"\n'
+        '• "show scores for lab 4"\n'
+        '• "which lab has lowest pass rate?"\n'
+        '• "top 5 students in lab 3"\n'
+        '• "compare groups in lab 2"\n'
+        '• "how many students enrolled?"\n'
+        '• "sync the data"'
     )
 
 
@@ -146,24 +164,12 @@ async def _handle_scores_async_impl(lab_query: Optional[str], loop) -> str:
     """Internal implementation for /scores handler."""
     if not lab_query:
         return "Please specify a lab name, e.g., /scores lab-01 or /scores 1"
-    
-    # Lab identifier should come from LLM in lab-XX format
-    # Just normalize it: extract number and format as lab-XX
-    lab_identifier = None
+
+    # Lab identifier should already be in lab-XX format from LLM
+    # Just use it directly - no regex parsing needed
+    lab_identifier = lab_query
     lab_title = None
-    
-    # Extract lab number from query (e.g., "lab-04" -> "04", "lab 04" -> "04", "4" -> "04")
-    import re
-    # Try to find any number in the query
-    numbers = re.findall(r'\d+', lab_query)
-    if numbers:
-        # Take the first number found
-        lab_num = numbers[0].zfill(2)
-        lab_identifier = f"lab-{lab_num}"
-    
-    if not lab_identifier:
-        return f"Lab '{lab_query}' not found. Use /labs to see available labs."
-    
+
     # Find lab title for display
     if loop:
         labs = loop.run_until_complete(lms_client.get_labs())
@@ -171,11 +177,14 @@ async def _handle_scores_async_impl(lab_query: Optional[str], loop) -> str:
         labs = await lms_client.get_labs()
     for lab in labs:
         title = lab.get("title", "")
-        if lab_identifier.replace("lab-", "") in title or lab_identifier in title.lower():
+        lab_num = str(lab.get("id", "")).zfill(2)
+        if f"lab-{lab_num}" == lab_identifier or lab_identifier in title.lower():
             lab_title = title
             break
     if not lab_title:
-        lab_title = f"Lab {lab_identifier.replace('lab-', '')}"
+        # Extract lab number for display if lab_title not found
+        lab_num = lab_identifier.replace("lab-", "")
+        lab_title = f"Lab {lab_num}"
     
     # Get pass rates for the lab
     if loop:
