@@ -128,6 +128,14 @@ async def route_intent_async(message: str) -> str:
             # LLM produced final answer
             final_content = assistant_message.get("content", "")
             if final_content:
+                # Try to parse JSON response from LLM
+                try:
+                    response_data = json.loads(final_content)
+                    if isinstance(response_data, dict):
+                        # If LLM returned {"tool": null, "response": "..."}, extract response
+                        return response_data.get("response", final_content)
+                except json.JSONDecodeError:
+                    pass
                 return final_content
             else:
                 return "I'm not sure how to help with that. Use /help to see available commands."
