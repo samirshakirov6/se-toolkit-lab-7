@@ -93,7 +93,29 @@ async def route_intent_async(message: str) -> str:
         total = result.get("total_learners", 0)
         completed = result.get("completed_learners", 0)
         return f"📊 Completion Rate: {rate:.1f}%\n{completed}/{total} learners completed"
-    
+
+    elif tool == "compare_all_labs_scores":
+        comparison_type = arguments.get("comparison_type", "all")
+        result = await lms_client.compare_all_labs_scores(comparison_type)
+
+        if "error" in result:
+            return result["error"]
+
+        if result.get("result") == "lowest":
+            lab = result.get("lab", "Unknown")
+            score = result.get("score", 0)
+            return f"📉 Lab with lowest pass rate: {lab} at {score:.1f}%"
+        elif result.get("result") == "highest":
+            lab = result.get("lab", "Unknown")
+            score = result.get("score", 0)
+            return f"📈 Lab with highest pass rate: {lab} at {score:.1f}%"
+        else:
+            labs = result.get("labs", [])
+            response = "📊 Lab Ranking (by avg score):\n\n"
+            for i, lab in enumerate(labs, 1):
+                response += f"{i}. {lab['title']}: {lab['avg_score']:.1f}%\n"
+            return response
+
     else:
         return f"Unknown tool: {tool}. Use /help to see available commands."
 

@@ -213,20 +213,77 @@ class LMSAPIClient:
 
     async def get_lab_by_title(self, title_query: str) -> Optional[Dict[str, Any]]:
         """Find a lab by title (partial match).
-        
+
         Args:
             title_query: The title or partial title to search for.
-            
+
         Returns:
             Lab object if found, None otherwise.
         """
         labs = await self.get_labs()
         query_lower = title_query.lower()
-        
+
         for lab in labs:
             if query_lower in lab.get("title", "").lower():
                 return lab
         return None
+
+    async def compare_all_labs_scores(self, comparison_type: str = "all") -> Dict[str, Any]:
+        """Compare pass rates across all labs.
+
+        Args:
+            comparison_type: 'lowest', 'highest', or 'all'.
+
+        Returns:
+            Dict with comparison results.
+        """
+        labs = await self.get_labs()
+        lab_scores = []
+
+        for lab in labs:
+            lab_id = lab.get("id", 0)
+            lab_title = lab.get("title", "Unknown")
+            lab_num = str(lab_id).zfill(2)
+            lab_identifier = f"lab-{lab_num}"
+
+            pass_rates = await self.get_pass_rates(lab_identifier)
+            if pass_rates:
+                total_score = sum(t.get("avg_score", 0) for t in pass_rates)
+                avg_score = total_score / len(pass_rates) if pass_rates else 0
+                total_attempts = sum(t.get("attempts", 0) for t in pass_rates)
+                lab_scores.append({
+                    "lab_id": lab_id,
+                    "title": lab_title,
+                    "avg_score": avg_score,
+                    "attempts": total_attempts
+                })
+
+        if not lab_scores:
+            return {"error": "No score data available"}
+
+        lab_scores.sort(key=lambda x: x["avg_score"], reverse=True)
+
+        if comparison_type == "lowest":
+            lowest = lab_scores[-1]
+            return {
+                "result": "lowest",
+                "lab": lowest["title"],
+                "score": lowest["avg_score"],
+                "attempts": lowest["attempts"]
+            }
+        elif comparison_type == "highest":
+            highest = lab_scores[0]
+            return {
+                "result": "highest",
+                "lab": highest["title"],
+                "score": highest["avg_score"],
+                "attempts": highest["attempts"]
+            }
+        else:
+            return {
+                "result": "ranking",
+                "labs": lab_scores
+            }
 
 
 # Global client instance

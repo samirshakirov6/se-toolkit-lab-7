@@ -131,11 +131,29 @@ TOOLS = [
             }
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "compare_all_labs_scores",
+            "description": "Use this when user asks: which lab has lowest/highest pass rate, compare all labs, rank labs by score, hardest lab, easiest lab, best performing lab, worst performing lab. Returns comparison of ALL labs.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "comparison_type": {
+                        "type": "string",
+                        "enum": ["lowest", "highest", "all"],
+                        "description": "Use 'lowest' for lowest pass rate, 'highest' for highest pass rate, 'all' for full ranking."
+                    }
+                },
+                "required": ["comparison_type"]
+            }
+        }
+    },
 ]
 
 SYSTEM_PROMPT = """You are an assistant that helps users interact with an LMS (Learning Management System) via a Telegram bot.
 
-You have access to the following tools:
+You have access to the following 10 tools:
 1. get_health - Check backend health and item count
 2. get_labs - List all available labs
 3. get_scores - Get scores/pass rates for a specific lab (requires lab identifier in format 'lab-XX')
@@ -145,6 +163,7 @@ You have access to the following tools:
 7. get_analytics_timeline - Get submissions timeline analytics
 8. get_analytics_groups - Get group performance analytics
 9. get_completion_rate - Get completion rate for course or specific lab
+10. compare_all_labs_scores - Compare pass rates across ALL labs to find highest, lowest, or rank them
 
 When the user asks a question, determine which tool to call based on their intent:
 - System status, health, backend working → get_health
@@ -156,6 +175,7 @@ When the user asks a question, determine which tool to call based on their inten
 - Submission timeline, when students submitted → get_analytics_timeline
 - Group performance, compare groups → get_analytics_groups
 - Completion rate, how many completed → get_completion_rate
+- Which lab has highest/lowest pass rate, compare labs, rank labs → compare_all_labs_scores with comparison_type ('highest', 'lowest', or 'all')
 
 For lab identifiers, extract the number from the query and format as 'lab-XX' (e.g., "lab 04" → "lab-04", "lab-01" → "lab-01").
 
