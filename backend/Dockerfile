@@ -19,17 +19,21 @@ ENV UV_NO_DEV=1
 ENV UV_PYTHON_DOWNLOADS=0
 
 WORKDIR /app
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=backend/pyproject.toml,target=backend/pyproject.toml \
-    uv sync --locked --no-install-project
 
-COPY backend /app/backend
+# First, copy lock files and pyproject.toml files
 COPY pyproject.toml uv.lock /app/
+COPY backend/pyproject.toml /app/backend/pyproject.toml
 
+# Sync dependencies (without --locked to allow uv to update if needed)
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked
+    uv sync --no-install-project
+
+# Copy the rest of the backend code
+COPY backend /app/backend
+
+# Sync again to include the project itself
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync
 
 # ---
 # Stage 2: use a final image without uv
