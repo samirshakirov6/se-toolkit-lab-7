@@ -89,6 +89,26 @@ services:
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
 
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+    restart: unless-stopped
+    networks:
+      - lms-network
+    environment:
+      # Telegram bot token
+      - BOT_TOKEN=${BOT_TOKEN:?'BOT_TOKEN is required'}
+      # LMS API - use Docker service name, not localhost
+      - LMS_API_BASE_URL=http://backend:${BACKEND_CONTAINER_PORT}
+      - LMS_API_KEY=${LMS_API_KEY:?'LMS_API_KEY is required'}
+      # LLM API - use host.docker.internal to reach host machine
+      - LLM_API_KEY=${LLM_API_KEY:?'LLM_API_KEY is required'}
+      - LLM_API_BASE_URL=${LLM_API_BASE_URL:?'LLM_API_BASE_URL is required'}
+      - LLM_API_MODEL=${LLM_API_MODEL:?'LLM_API_MODEL is required'}
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
 

@@ -77,6 +77,82 @@ By the end of this lab, you should be able to say:
 2. I can ask it questions in plain language and it fetches the right data.
 3. I used an AI coding agent to plan and build the whole thing.
 
+## Deploy
+
+### Prerequisites
+
+Before deploying, ensure you have the following environment variables set in `.env.docker.secret`:
+
+```bash
+# Telegram Bot
+BOT_TOKEN=<your-bot-token>
+
+# LMS API
+LMS_API_KEY=<lms-api-key>
+
+# LLM API
+LLM_API_KEY=<llm-api-key>
+LLM_API_BASE_URL=<llm-api-base-url>
+LLM_API_MODEL=<llm-api-model>
+```
+
+### Deploy with Docker Compose
+
+1. **Stop the background bot process** (if running):
+   ```bash
+   cd ~/se-toolkit-lab-7
+   pkill -f "bot.py" 2>/dev/null
+   ```
+
+2. **Build and start all services**:
+   ```bash
+   docker compose --env-file .env.docker.secret up --build -d
+   ```
+
+3. **Verify services are running**:
+   ```bash
+   docker compose --env-file .env.docker.secret ps
+   ```
+   You should see `bot`, `backend`, `postgres`, `caddy` services.
+
+4. **Check bot logs**:
+   ```bash
+   docker compose --env-file .env.docker.secret logs bot --tail 20
+   ```
+   Look for:
+   - "Application started" — bot connected to Telegram
+   - "HTTP Request: POST .../getUpdates" — bot is polling
+   - No Python tracebacks
+
+5. **Verify backend is healthy**:
+   ```bash
+   curl -sf http://localhost:42002/docs
+   ```
+
+### Test in Telegram
+
+Send these messages to your bot:
+
+- `/start` — welcome message
+- `/health` — backend status
+- `"what labs are available?"` — natural language query
+- `"which lab has the lowest pass rate?"` — multi-step reasoning
+
+### Troubleshooting
+
+| Symptom | Likely cause |
+|---------|--------------|
+| Bot container keeps restarting | Check logs: `docker compose logs bot`. Usually missing env var or import error. |
+| `/health` fails but worked before | `LMS_API_BASE_URL` must be `http://backend:8000` (not localhost). |
+| LLM queries fail | `LLM_API_BASE_URL` must point to host (e.g., `http://host.docker.internal:42005`). |
+| "BOT_TOKEN is required" | Bot env vars need to be in `.env.docker.secret`. |
+
+### Stop services
+
+```bash
+docker compose --env-file .env.docker.secret down
+```
+
 ## Tasks
 
 ### Prerequisites
