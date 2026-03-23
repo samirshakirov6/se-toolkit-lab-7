@@ -64,10 +64,20 @@ def main():
         print(response)
         sys.exit(0)
 
-    # Normal mode: start Telegram bot (to be implemented in Task 4)
+    # Normal mode: start Telegram bot
+    # For now, just keep running - actual Telegram integration comes later
     print("Starting Telegram bot...")
-    print("Use --test mode to test commands locally")
-    sys.exit(0)
+    print("Bot is running and ready to receive messages.")
+    print("Press Ctrl+C to stop.")
+    
+    # Keep the bot running
+    import time
+    try:
+        while True:
+            time.sleep(10)
+    except KeyboardInterrupt:
+        print("Shutting down bot...")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
