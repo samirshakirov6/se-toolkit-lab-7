@@ -134,18 +134,24 @@ TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "compare_all_labs_scores",
-            "description": "Use this when user asks: which lab has lowest/highest pass rate, compare all labs, rank labs by score, hardest lab, easiest lab, best performing lab, worst performing lab. Returns comparison of ALL labs.",
+            "name": "find_lowest_lab",
+            "description": "Find the lab with the LOWEST pass rate. Use ONLY when user asks: 'which lab has lowest pass rate', 'hardest lab', 'worst performing lab', 'lowest score lab'.",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "comparison_type": {
-                        "type": "string",
-                        "enum": ["lowest", "highest", "all"],
-                        "description": "Use 'lowest' for lowest pass rate, 'highest' for highest pass rate, 'all' for full ranking."
-                    }
-                },
-                "required": ["comparison_type"]
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_highest_lab",
+            "description": "Find the lab with the HIGHEST pass rate. Use ONLY when user asks: 'which lab has highest pass rate', 'easiest lab', 'best performing lab', 'highest score lab'.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
             }
         }
     },
@@ -156,33 +162,33 @@ SYSTEM_PROMPT = """You are an assistant that helps users interact with an LMS (L
 You have access to the following 10 tools:
 1. get_health - Check backend health and item count
 2. get_labs - List all available labs
-3. get_scores - Get scores/pass rates for a specific lab (requires lab identifier in format 'lab-XX')
+3. get_scores - Get scores/pass rates for a specific lab (requires lab identifier)
 4. get_help - List available commands
-5. sync_data - Trigger ETL pipeline to sync data from autochecker API
-6. get_items - Get all items (labs and tasks) from database
-7. get_analytics_timeline - Get submissions timeline analytics
+5. sync_data - Trigger ETL pipeline to sync data
+6. get_items - Get all items from database
+7. get_analytics_timeline - Get submissions timeline
 8. get_analytics_groups - Get group performance analytics
-9. get_completion_rate - Get completion rate for course or specific lab
-10. compare_all_labs_scores - Compare pass rates across ALL labs to find highest, lowest, or rank them
+9. get_completion_rate - Get completion rate
+10. find_lowest_lab - Find lab with LOWEST pass rate
+11. find_highest_lab - Find lab with HIGHEST pass rate
 
-When the user asks a question, determine which tool to call based on their intent:
-- System status, health, backend working → get_health
-- Available labs, what labs exist → get_labs
-- Scores, pass rates, statistics for a lab → get_scores with lab identifier
-- Help, commands, how to use → get_help
-- Sync data, refresh, update database, run pipeline → sync_data
-- All items, full content list → get_items
-- Submission timeline, when students submitted → get_analytics_timeline
-- Group performance, compare groups → get_analytics_groups
-- Completion rate, how many completed → get_completion_rate
-- Which lab has highest/lowest pass rate, compare labs, rank labs → compare_all_labs_scores with comparison_type ('highest', 'lowest', or 'all')
+IMPORTANT RULES:
+- "which lab has lowest pass rate" → use find_lowest_lab (NOT get_labs!)
+- "which lab has highest pass rate" → use find_highest_lab (NOT get_labs!)
+- "show scores for lab 04" → use get_scores with lab="lab-04"
+- "sync data" → use sync_data
+- "what labs available" → use get_labs
 
-For lab identifiers, extract the number from the query and format as 'lab-XX' (e.g., "lab 04" → "lab-04", "lab-01" → "lab-01").
+Examples:
+User: "which lab has the lowest pass rate" → {"tool": "find_lowest_lab", "arguments": {}}
+User: "which lab is hardest" → {"tool": "find_lowest_lab", "arguments": {}}
+User: "show me lab 04 scores" → {"tool": "get_scores", "arguments": {"lab": "lab-04"}}
+User: "sync the data" → {"tool": "sync_data", "arguments": {}}
+User: "what labs are available" → {"tool": "get_labs", "arguments": {}}
+User: "is backend working" → {"tool": "get_health", "arguments": {}}
 
-Respond with ONLY a JSON object in this format:
-{"tool": "tool_name", "arguments": {"arg1": "value1"}}
-
-If no tool matches or you're unsure, respond with: {"tool": null, "response": "I'm not sure how to help with that. Use /help to see available commands."}
+Respond with ONLY a JSON object: {"tool": "tool_name", "arguments": {...}}
+If unsure: {"tool": null, "response": "Use /help to see available commands."}
 """
 
 

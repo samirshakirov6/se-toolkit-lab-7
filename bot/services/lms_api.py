@@ -285,6 +285,14 @@ class LMSAPIClient:
                 "labs": lab_scores
             }
 
+    async def find_lowest_lab(self) -> Dict[str, Any]:
+        """Find the lab with the lowest pass rate."""
+        return await self.compare_all_labs_scores("lowest")
+
+    async def find_highest_lab(self) -> Dict[str, Any]:
+        """Find the lab with the highest pass rate."""
+        return await self.compare_all_labs_scores("highest")
+
 
 # Global client instance
 lms_client = LMSAPIClient()
