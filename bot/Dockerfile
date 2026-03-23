@@ -9,7 +9,8 @@ WORKDIR /app/bot
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Copy bot project files
-COPY bot/pyproject.toml bot/uv.lock ./
+COPY bot/pyproject.toml ./pyproject.toml
+COPY uv.lock ./uv.lock
 
 # Install dependencies using uv
 RUN uv sync --frozen
